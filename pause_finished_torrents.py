@@ -21,10 +21,10 @@ def main():
 
   remote = transmission_remote.TransmissionRemote(args.address, args.username, args.password)
   torrents = remote.List()
-  finished_torrents = [t for t in torrents if t.percent_done == 100]
+  finished_torrents = [t for t in torrents if t.percent_done == 100 and t.state.lower() != 'stopped']
   if finished_torrents:
     print 'Finishing the following torrents'
-    print '\n  '.join(t.name for t in finished_torrents)
+    print '\n  '.join(t.name + ' ' + t.state for t in finished_torrents)
     remote.Stop(finished_torrents)
 
 
