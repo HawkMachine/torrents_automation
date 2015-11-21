@@ -207,11 +207,10 @@ def main():
     formatted_events = FormatNotifications(torrents_per_category)
     if args.email:
       SendEmail('Torrents need your attention', formatted_events, args.email)
+      SaveNotificationTimes(db, now, torrents_per_category)
     else:
       print formatted_events
 
-  # Save notification in db.
-  SaveNotificationTimes(db, now, torrents_per_category)
 
 
 if __name__ == '__main__':
