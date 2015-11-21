@@ -6,7 +6,7 @@ import bsddb
 import subprocess
 import collections
 
-from transmission import transmission_remote
+from torrents_automation import transmission_remote
 
 
 def ClearDB(db):

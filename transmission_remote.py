@@ -15,6 +15,7 @@ TorrentInfo = collections.namedtuple(
 def str2date(s):
   return datetime.datetime.strptime(s.strip(), '%a %b %d %H:%M:%S %Y')
 
+
 TORRENT_INFO_REGEX = {
     'id': (int, 'Id: (?P<value>\d+)'),
     'name': (str, 'Name: (?P<value>.*)$'),
@@ -29,6 +30,9 @@ TORRENT_INFO_REGEX = {
     'latest_activity': (str2date, 'Latest activity: (?P<value>.*)$'),
 }
 
+RESULT_REGEX = '^.* responded: "(?P<value>.*)"$'
+
+
 class TransmissionRemote(object):
 
   def __init__(self, address, username, password):
@@ -42,6 +46,15 @@ class TransmissionRemote(object):
       cmd.extend(['-n', self.username + ':' + self.password])
     cmd.extend(args)
     return subprocess.check_output(cmd)
+
+  def _GetValue(self, s, regex, convert):
+    m = re.search(regex, s, re.MULTILINE)
+    if not m:
+      return None
+    value = m.group('value')
+    if convert:
+      value = convert(value)
+    return value
 
   def List(self, torrent='all'):
     output = self._GetOutput('-t', torrent, '-i')
@@ -59,6 +72,14 @@ class TransmissionRemote(object):
       torrent_info = TorrentInfo(**field_values)
       result.append(torrent_info)
     return result
+
+  def Stop(self, torrents):
+    ids_arg = ','.join(str(t.id) for t in torrents)
+    output = self._GetOutput('-t', ids_arg, '-S')
+    value = self._GetValue(output, RESULT_REGEX, None)
+    if not value or value != "success":
+      return False
+    return True
 
 
 def main():
